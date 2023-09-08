@@ -1,0 +1,42 @@
+version: '3.9'
+services:
+    app:
+        build:
+            context: .
+            dockerfile: docker/local/Dockerfile
+        working_dir: /app
+        environment:
+            - XDEBUG_MODE=develop,coverage,debug,profile
+            - XDEBUG_START_WITH_REQUEST=${XDEBUG_START_WITH_REQUEST}
+            - XDEBUG_CLIENT_PORT=9000
+            - XDEBUG_CLIENT_HOST=${XDEBUG_CLIENT_HOST}
+            - XDEBUG_MAX_NESTING_LEVEL=1000
+            - XDEBUG_IDE_KEY=PHPSTORM
+        ports:
+            - "8080:8080"
+        volumes:
+            - ./:/app:rw,consistent
+        networks:
+            - "internal-network"
+
+    postgres:
+        image: postgres:12.3-alpine
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        environment:
+            - POSTGRES_DB=${DB_DATABASE}
+            - POSTGRES_USER=${DB_USERNAME}
+            - POSTGRES_PASSWORD=${DB_PASSWORD}
+        ports:
+            - "5432:5432"
+        networks:
+            - "internal-network"
+
+volumes:
+    postgres_data:
+        driver: local
+
+networks:
+    internal-network:
+        driver: bridge
+
